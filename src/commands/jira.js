@@ -13,6 +13,20 @@ function toWiki(text, format = 'markdown') {
 
 const fromWiki = (text, raw) => (raw ? text : jiraToMarkdown(text));
 
+// Replaces @user:<accountId> (from Jira mentions) with @Display Name.
+async function resolveMentions(client, texts) {
+  const ids = [...new Set(texts.flatMap((t) => [...(t || '').matchAll(/@user:([\w:-]+)/g)].map((m) => m[1])))];
+  if (!ids.length) return texts;
+  const names = {};
+  for (let i = 0; i < ids.length; i += 50) {
+    try {
+      const res = await client.get('/rest/api/2/user/bulk', { accountId: ids.slice(i, i + 50), maxResults: 50 });
+      for (const u of res.values || []) names[u.accountId] = u.displayName;
+    } catch {}
+  }
+  return texts.map((t) => t && t.replace(/@user:([\w:-]+)/g, (m, id) => (names[id] ? `@${names[id]}` : m)));
+}
+
 const DEFAULT_FIELDS = 'summary,status,assignee,reporter,priority,issuetype,created,updated,duedate,labels,parent';
 
 function issueKey(arg) {
@@ -87,6 +101,11 @@ export const issue = {
         const c = await client.get(`/rest/api/2/issue/${key}/comment`, { orderBy: '-created', maxResults: 20 });
         out.comments = c.comments.map((x) => ({ id: x.id, author: x.author?.displayName, created: x.created, body: fromWiki(x.body, opts.raw) }));
       }
+      if (!opts.raw) {
+        const [description, ...bodies] = await resolveMentions(client, [out.description, ...(out.comments || []).map((c) => c.body)]);
+        out.description = description;
+        (out.comments || []).forEach((c, i) => (c.body = bodies[i]));
+      }
       print(out, opts, (o) =>
         [
           `${o.key}  ${o.summary}`,
@@ -151,6 +170,7 @@ export const issue = {
       const key = issueKey(args[0]);
       const c = await client.get(`/rest/api/2/issue/${key}/comment`, { orderBy: '-created', maxResults: opts.limit });
       const items = c.comments.map((x) => ({ id: x.id, author: x.author?.displayName, created: x.created, body: fromWiki(x.body, opts.raw) }));
+      if (!opts.raw) (await resolveMentions(client, items.map((c) => c.body))).forEach((b, i) => (items[i].body = b));
       print(items, opts, (items) => items.map((c) => `--- ${c.author} · ${shortDate(c.created)} (#${c.id})\n${c.body}`).join('\n') || '(no comments)');
     },
   },
