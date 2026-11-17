@@ -37,12 +37,15 @@ function help(groupName) {
   }
   if (!groupName) {
     lines.push('Global flags:', '  --json      machine-readable output', '  --dry-run   print write requests instead of sending them', '');
-    lines.push('Config: atl auth login · env overrides: ATL_SITE, ATL_EMAIL, ATL_TOKEN');
+    lines.push('Login: atl login · atl status · atl logout · env overrides: ATL_SITE, ATL_EMAIL, ATL_TOKEN');
   }
   return lines.join('\n');
 }
 
+const SHORTCUTS = { login: ['auth', 'login'], logout: ['auth', 'logout'], status: ['auth', 'status'] };
+
 async function main(argv) {
+  if (SHORTCUTS[argv[0]]) argv = [...SHORTCUTS[argv[0]], ...argv.slice(1)];
   const [rawGroup, cmdName, ...rest] = argv;
   const groupName = ALIASES[rawGroup] || rawGroup;
   if (!groupName || groupName === 'help' || groupName === '--help' || groupName === '-h') return console.log(help());

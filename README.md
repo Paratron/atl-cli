@@ -20,8 +20,8 @@ npm link        # makes `atl` available globally
 Create an API token at <https://id.atlassian.com/manage-profile/security/api-tokens>, then:
 
 ```sh
-atl auth login --site your-site --email you@example.com   # prompts for the token
-atl auth status
+atl login --site your-site --email you@example.com   # prompts for the token
+atl status
 ```
 
 Site and email are stored in `~/.config/atl/config.json`, the token in the keychain (service `atl-cli`).

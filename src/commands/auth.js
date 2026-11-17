@@ -25,7 +25,7 @@ async function readSecret(prompt) {
 export const auth = {
   login: {
     summary: 'Store site, email and API token (token goes to the macOS keychain)',
-    usage: 'atl auth login --site <site> --email <you@example.com>   (token is prompted, or piped via stdin)',
+    usage: 'atl login --site <site> --email <you@example.com>   (token is prompted, or piped via stdin)',
     options: { site: { type: 'string' }, email: { type: 'string' } },
     async run(_client, _args, opts) {
       const file = readConfigFile();
@@ -43,7 +43,7 @@ export const auth = {
 
   status: {
     summary: 'Check the configured credentials',
-    usage: 'atl auth status',
+    usage: 'atl status',
     async run(client, _args, opts) {
       const { site, email, token } = client.config;
       const source = process.env.ATL_TOKEN ? 'ATL_TOKEN' : token ? 'keychain' : 'missing';
@@ -55,7 +55,7 @@ export const auth = {
 
   logout: {
     summary: 'Remove the stored token from the keychain',
-    usage: 'atl auth logout',
+    usage: 'atl logout',
     async run(client, _args, opts) {
       const removed = client.config.email ? keychainDelete(client.config.email) : false;
       print({ removed }, opts, () => (removed ? 'Token removed from keychain.' : 'No stored token found.'));
