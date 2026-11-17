@@ -1,0 +1,29 @@
+{
+  "name": "atl-cli",
+  "version": "0.1.0",
+  "description": "Zero-dependency CLI for Jira, Confluence and Atlassian notifications (Atlassian Cloud)",
+  "type": "module",
+  "bin": {
+    "atl": "bin/atl.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Paratron/atl-cli.git"
+  },
+  "keywords": [
+    "atlassian",
+    "jira",
+    "confluence",
+    "cli"
+  ]
+}
