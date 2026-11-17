@@ -23,21 +23,21 @@ async function readSecret(prompt) {
 }
 
 export const auth = {
-  login: {
+  'set-token': {
     summary: 'Store site, email and API token (token goes to the macOS keychain)',
-    usage: 'atl login --site <site> --email <you@example.com>   (token is prompted, or piped via stdin)',
+    usage: 'atl set-token [--site <site> --email <you@example.com>]   (token is prompted, or piped via stdin)',
     options: { site: { type: 'string' }, email: { type: 'string' } },
     async run(_client, _args, opts) {
       const file = readConfigFile();
       const site = normalizeSite(opts.site || file.site);
       const email = opts.email || file.email;
-      if (!site || !email) throw new Error('--site and --email are required on first login.');
+      if (!site || !email) throw new Error('--site and --email are required the first time.');
       const token = await readSecret('API token (https://id.atlassian.com/manage-profile/security/api-tokens): ');
       if (!token) throw new Error('No token given.');
       keychainSet(email, token);
       writeConfigFile({ site, email });
       const me = await new Client().get('/rest/api/2/myself');
-      print({ site, email, user: me.displayName }, opts, () => `Logged in to ${site} as ${me.displayName}. Token stored in keychain, config in ${CONFIG_FILE}.`);
+      print({ site, email, user: me.displayName }, opts, () => `Token for ${site} works (${me.displayName}). Stored in keychain, config in ${CONFIG_FILE}.`);
     },
   },
 
@@ -53,9 +53,9 @@ export const auth = {
     },
   },
 
-  logout: {
+  'remove-token': {
     summary: 'Remove the stored token from the keychain',
-    usage: 'atl logout',
+    usage: 'atl remove-token',
     async run(client, _args, opts) {
       const removed = client.config.email ? keychainDelete(client.config.email) : false;
       print({ removed }, opts, () => (removed ? 'Token removed from keychain.' : 'No stored token found.'));

@@ -15,12 +15,12 @@ cd atl-cli
 npm link        # makes `atl` available globally
 ```
 
-## Login
+## Setup
 
 Create an API token at <https://id.atlassian.com/manage-profile/security/api-tokens>, then:
 
 ```sh
-atl login --site your-site --email you@example.com   # prompts for the token
+atl set-token --site your-site --email you@example.com   # prompts for the token
 atl status
 ```
 

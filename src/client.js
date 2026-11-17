@@ -29,8 +29,8 @@ export class Client {
 
   ensureAuth() {
     const { site, email, token } = this.config;
-    if (!site || !email) throw new AtlError('Not configured. Run: atl login --site <your-site> --email <you@example.com>');
-    if (!token) throw new AtlError(`No API token found for ${email}. Run: atl login (or set ATL_TOKEN)`);
+    if (!site || !email) throw new AtlError('Not configured. Run: atl set-token --site <your-site> --email <you@example.com>');
+    if (!token) throw new AtlError(`No API token found for ${email}. Run: atl set-token (or set ATL_TOKEN)`);
   }
 
   get authHeader() {
