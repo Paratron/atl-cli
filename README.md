@@ -3,7 +3,7 @@
 Zero-dependency command line client for **Jira**, **Confluence** and the **Atlassian notification bell** (Atlassian Cloud).
 
 - No `node_modules`: only Node.js ≥ 20 built-ins (`fetch`, `util.parseArgs`), so there is no supply chain to compromise.
-- API token is stored in the macOS keychain, not in files.
+- API token is stored in the operating system's credential store (see [Token storage](#token-storage)).
 - Markdown in, Markdown out: descriptions, comments and pages are written as Markdown and converted to Jira wiki markup / Confluence storage format.
 - `--json` on every command for scripts and AI agents, `--dry-run` for every write.
 
@@ -24,8 +24,25 @@ atl set-token --site your-site --email you@example.com   # prompts for the token
 atl status
 ```
 
-Site and email are stored in `~/.config/atl/config.json`, the token in the keychain (service `atl-cli`).
-On other systems or in CI, set `ATL_SITE`, `ATL_EMAIL` and `ATL_TOKEN` instead.
+```sh
+atl status         # shows site, user and where the token comes from
+atl remove-token   # deletes the stored token
+```
+
+### Token storage
+
+| System | Where the token goes | Requirement |
+|---|---|---|
+| macOS | Login keychain (service `atl-cli`) | – |
+| Linux | Secret Service: GNOME Keyring, KWallet, KeePassXC | `secret-tool` (package `libsecret-tools` / `libsecret`) |
+| Windows | File encrypted with DPAPI, bound to your Windows user | PowerShell (built in) |
+| Fallback | Plain file, permissions `0600` | – |
+
+The fallback is used when no credential store is available (e.g. a headless Linux box without `secret-tool`).
+Force a store with `ATL_SECRET_STORE=keychain|secret-service|dpapi|file`.
+
+Site and email live in `~/.config/atl/config.json` (Windows: `%APPDATA%\atl\config.json`; override with `ATL_CONFIG_DIR`).
+In CI, skip `set-token` and set `ATL_SITE`, `ATL_EMAIL` and `ATL_TOKEN` instead.
 
 ## Usage
 
