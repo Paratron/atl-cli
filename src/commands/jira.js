@@ -35,6 +35,13 @@ function issueKey(arg) {
   return (m ? m[1] : arg).toUpperCase();
 }
 
+function commentId(arg) {
+  if (!arg) throw new Error('Missing comment id (see: atl issue comments <KEY>).');
+  const id = String(arg).replace(/^#/, '');
+  if (!/^\d+$/.test(id)) throw new Error(`Invalid comment id "${arg}" (expected a number).`);
+  return id;
+}
+
 function flatIssue(i, site) {
   const f = i.fields || {};
   return {
@@ -184,6 +191,32 @@ export const issue = {
       const body = toWiki(await readBody(opts), opts.format);
       const res = await client.post(`/rest/api/2/issue/${key}/comment`, { body });
       print(res, opts, (r) => (r.dryRun ? '' : `Comment #${r.id} added to ${key}.`));
+    },
+  },
+
+  'comment-edit': {
+    summary: 'Edit an existing comment (Markdown, or --format wiki)',
+    usage: 'atl issue comment-edit <KEY> <commentId> --body "<markdown>" | --file <path> | <stdin> [--format markdown|wiki]',
+    options: { body: { type: 'string' }, file: { type: 'string' }, ...formatOption },
+    async run(client, args, opts) {
+      const key = issueKey(args[0]);
+      const id = commentId(args[1]);
+      const body = toWiki(await readBody(opts), opts.format);
+      const res = await client.put(`/rest/api/2/issue/${key}/comment/${id}`, { body });
+      print(res, opts, (r) => (r.dryRun ? '' : `Comment #${r.id} of ${key} updated.`));
+    },
+  },
+
+  'comment-delete': {
+    summary: 'Delete a comment (requires --yes)',
+    usage: 'atl issue comment-delete <KEY> <commentId> --yes',
+    options: { yes: { type: 'boolean' } },
+    async run(client, args, opts) {
+      const key = issueKey(args[0]);
+      const id = commentId(args[1]);
+      if (!opts.yes && !opts['dry-run']) throw new Error(`Refusing to delete comment #${id} of ${key} without --yes.`);
+      const res = await client.delete(`/rest/api/2/issue/${key}/comment/${id}`);
+      print(res ?? { deleted: id, key }, opts, (r) => (r.dryRun ? '' : `Comment #${id} deleted from ${key}.`));
     },
   },
 

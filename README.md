@@ -73,6 +73,9 @@ atl issue create --project ABC --type Bug --summary "Login fails" --description 
 atl issue update ABC-123 --add-labels frontend --due 2026-12-01 --assignee "Jane Doe"
 atl issue comment ABC-123 --body "Looks good, **merging**."
 echo "long markdown" | atl issue comment ABC-123
+atl issue comments ABC-123                  # shows comment ids (#12345)
+atl issue comment-edit ABC-123 12345 --body "Updated **text**"   # or --file / stdin, --format wiki
+atl issue comment-delete ABC-123 12345 --yes
 atl issue transitions ABC-123
 atl issue transition ABC-123 "In Review" --comment "Ready"
 atl issue assign ABC-123 me
